@@ -14,12 +14,14 @@ dependencies {
     // Spock (compatível com Groovy 4)
     testImplementation 'org.spockframework:spock-core:2.4-M1-groovy-4.0'
 
-
     // JUnit Platforma
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Driver PostgreSQL (JDBC)
     implementation 'org.postgresql:postgresql:42.7.3'
+
+    // Groovy JSON (JsonSlurper / JsonOutput) para a API REST
+    implementation 'org.apache.groovy:groovy-json:4.0.22'
 }
 
 test {
@@ -29,6 +31,7 @@ test {
 application {
 
     mainClass = 'linketinder.Main'
+    //mainClass = 'linketinder.api.ApiMain'
 }
 
 run {
