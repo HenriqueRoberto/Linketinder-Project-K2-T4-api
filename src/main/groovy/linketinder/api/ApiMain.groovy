@@ -1,6 +1,7 @@
 package linketinder.api
 
 import linketinder.api.handler.CandidatoHandler
+import linketinder.api.handler.EmpresaHandler
 import linketinder.controller.AppController
 
 class ApiMain {
@@ -10,6 +11,7 @@ class ApiMain {
 
         ApiServer servidor = new ApiServer(8080)
         servidor.registrar("/candidatos", new CandidatoHandler(app.candidatoController))
+        servidor.registrar("/empresas",   new EmpresaHandler(app.empresaController))
         servidor.iniciar()
     }
 }
