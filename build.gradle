@@ -14,8 +14,6 @@ dependencies {
     // Spock (compatível com Groovy 4)
     testImplementation 'org.spockframework:spock-core:2.4-M1-groovy-4.0'
 
-    // Módulo JSON do Groovy — necessário para JsonSlurper e JsonOutput no microserviço de cadastro
-    implementation 'org.apache.groovy:groovy-json:4.0.22'
 
     // JUnit Platforma
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
