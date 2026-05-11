@@ -121,11 +121,83 @@ src/main/groovy/linketinder/
 
 ---
 
+## 🌐 Parte 3 — API REST (sem frameworks)
+
+Nessa etapa foram desenvolvidos endpoints REST no back-end seguindo os princípios de **APIs RESTful** (verbos HTTP corretos, status codes adequados, comunicação cliente/servidor via JSON) **sem utilizar frameworks** como Spring, Grails ou Micronaut.
+
+### Estratégia adotada
+
+Para evitar a complexidade de configurar **Tomcat + Servlets** (e possíveis conflitos entre `javax`/`jakarta`), foi utilizado o **`com.sun.net.httpserver.HttpServer`** — um servidor HTTP nativo da JDK, leve, sem dependências externas e ideal para expor endpoints REST em projetos Groovy/Java puros.
+
+A serialização e desserialização de JSON é feita com **`groovy.json.JsonSlurper`** e **`groovy.json.JsonOutput`** (lib `groovy-json`).
+
+### O que foi implementado
+
+- **`ApiServer`** — encapsula o `HttpServer` da JDK, registra handlers por caminho e inicia o servidor na porta `8080`.
+- **`ApiMain`** — ponto de entrada **separado** do `Main` do CLI; monta as dependências via `AppController.criar()` e registra os 3 handlers.
+- **`RespostaHttp`** — helper que centraliza a escrita de respostas JSON (define `Content-Type`, status code, encoding UTF-8).
+- **Handlers** — um por recurso, cada um delegando a lógica para o controller MVC já existente:
+  - `CandidatoHandler` → `POST /candidatos`
+  - `EmpresaHandler` → `POST /empresas`
+  - `VagaHandler` → `POST /empresas/{id}/vagas` (rota REST aninhada, com regex para extrair o `idEmpresa` da URL)
+
+A camada MVC foi **mantida intacta**: os handlers chamam os mesmos controllers/services usados pelo CLI, garantindo que a regra de negócio não seja duplicada.
+
+### Endpoints
+
+| Verbo | URL | Body (JSON) | Sucesso |
+|---|---|---|---|
+| `POST` | `/candidatos` | `{ nome, email, cpf, idade, estado, cep, descricao, senha }` | `201 Created` |
+| `POST` | `/empresas` | `{ nome, email, cnpj, pais, estado, cep, descricao, senha }` | `201 Created` |
+| `POST` | `/empresas/{id}/vagas` | `{ nome, descricao, horario, localizacao, remuneracao, competencias: ["Java","SQL"] }` | `201 Created` |
+
+### Status codes utilizados
+
+- `201 Created` — recurso criado com sucesso
+- `400 Bad Request` — dados inválidos ou e-mail duplicado (`IllegalArgumentException`)
+- `404 Not Found` — URL não corresponde a nenhum recurso
+- `405 Method Not Allowed` — método HTTP não suportado pelo endpoint
+- `500 Internal Server Error` — erro inesperado
+
+### Estrutura da camada API
+
+```
+src/main/groovy/linketinder/
+└── api/
+    ├── ApiServer.groovy
+    ├── ApiMain.groovy
+    ├── RespostaHttp.groovy
+    └── handler/
+        ├── CandidatoHandler.groovy
+        ├── EmpresaHandler.groovy
+        └── VagaHandler.groovy
+```
+
+### Dependência adicionada
+
+```groovy
+implementation 'org.apache.groovy:groovy-json:4.0.22'
+```
+
+### Como testar (Postman / curl)
+
+Suba a API com `./gradlew run` (após ajustar `mainClass = 'linketinder.api.ApiMain'` no `build.gradle`) e teste:
+
+```bash
+curl -X POST http://localhost:8080/candidatos \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Sandubinha","email":"s@s.com","cpf":"123","idade":25,"estado":"SC","cep":"88210","descricao":"dev","senha":"123"}'
+```
+
+---
+
 ## 🛠️ Tecnologias Utilizadas
 
 - **Groovy 4**
 - **PostgreSQL**
 - **JDBC** — integração entre aplicação e banco de dados
+- **`com.sun.net.httpserver.HttpServer`** — servidor HTTP nativo da JDK para a API REST
+- **`groovy-json`** — serialização e desserialização de JSON
 - **draw.io** — modelagem do banco de dados
 - **Padrão MVC** — organização em Model, View e Controller
 - **Spock Framework** — testes unitários para validação das regras de negócio
@@ -182,6 +254,23 @@ psql -U app_user -d linketinder -f database/linketinder.sql
 ```bash
 ./gradlew test
 ```
+
+### API REST
+
+Para subir a API REST em vez do CLI, altere a `mainClass` no `build.gradle`:
+
+```groovy
+application {
+    mainClass = 'linketinder.api.ApiMain'
+}
+```
+
+E execute:
+```bash
+./gradlew run
+```
+
+O servidor sobe em `http://localhost:8080` e expõe os endpoints listados na seção **Parte 3 — API REST**.
 
 ### Front-end (HTML/CSS/TypeScript)
 
