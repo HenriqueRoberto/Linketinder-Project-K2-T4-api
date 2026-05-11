@@ -20,6 +20,9 @@ dependencies {
 
     // Driver PostgreSQL (JDBC)
     implementation 'org.postgresql:postgresql:42.7.3'
+
+    // Groovy JSON (JsonSlurper / JsonOutput) para a API REST
+    implementation 'org.apache.groovy:groovy-json:4.0.22'
 }
 
 test {
@@ -29,6 +32,7 @@ test {
 application {
 
     mainClass = 'linketinder.Main'
+    //mainClass = 'linketinder.api.ApiMain'
 }
 
 run {
