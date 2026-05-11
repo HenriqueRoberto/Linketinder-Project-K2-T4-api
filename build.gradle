@@ -30,8 +30,8 @@ test {
 
 application {
 
-    mainClass = 'linketinder.Main'
-    //mainClass = 'linketinder.api.ApiMain'
+    //mainClass = 'linketinder.Main'
+    mainClass = 'linketinder.api.ApiMain'
 }
 
 run {
